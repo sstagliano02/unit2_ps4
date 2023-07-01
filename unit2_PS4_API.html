@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unit 2 - PS4</title>
+
+    <link rel="stylesheet" href="#">
+
+    <script   src="https://code.jquery.com/jquery-3.1.1.min.js"
+	integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+	crossorigin="anonymous"></script>
+
+    <style>
+          body {font-family: Helvetica, sans-serif};
+    </style>
+
+</head>
+<body>
+
+    <h1>Unit 2 PS4</h1>
+
+    <form onSubmit="return false">   <!-- return falls prevents the page from reloading when hitting "Enter" key-->
+        <label for="user_word">Input any word to look it up in a dictionary:</label>
+        <input name="user_word" type="text" id="user_word"  placeholder="i.e. copy or hello">
+        <br><br>
+
+        <input type="button" id="submit" value="Submit Word">
+
+    </form>
+    <br>
+
+    <h2 class = "placeholder" id = "word"> Word: </h2>
+    <h2 class = "placeholder" id = "word2"> Word: </h2>
+
+
+    <section></section>
+
+    <h4>About the API</h4>
+    <div>This is a free dictionary API found at <a href="https://dictionaryapi.dev/">https://dictionaryapi.dev/</a><br>
+    Users can search for a word and return phonetic pronunciations, synonyms, and and array of definitions which is what is exposed above.<br>
+    All that needs to be provided to this API is a single word. If the word does not exist a 404 error is returned.<br>
+    Possible use cases include games (I used this in Wordle!), education tools (i.e. textbook and e-readers), and document editors (for example Word <br>
+    shows synonyms on right-click).
+    <br>
+    <h4>Postman Screenshot</h4>
+    <img src="Postman_screenshot.PNG" alt="Postman" style="display:inline-block; max-width:800px; width:100%">
+
+</div>
+
+
+    <script>
+    $(document).ready(function(){
+
+        var json_obj;
+
+
+        document.getElementById("submit").addEventListener("click", event_handler)  //adds event listener to Submit button click
+
+        function event_handler (){
+
+            user_word = $("#user_word").val();       //grab user guess from input box
+
+            getDict(checkWord,user_word)
+
+            $("#word").html("Word (called via AJAX Pattern): " + json_obj.word.toUpperCase());
+            $("section").html("");
+            getText("https://api.dictionaryapi.dev/api/v2/entries/en/"+user_word)
+
+            const section = document.querySelector('section');
+
+            for (var meaning of json_obj.meanings) {
+                const pos_article = document.createElement('article');
+                const pos = document.createElement('h3');
+                pos.textContent = "As a(n) " + meaning.partOfSpeech + ":";
+                pos_article.appendChild(pos);
+                
+                count = 1;
+
+                section.appendChild(pos_article);
+
+                for (var def in meaning.definitions) {
+                    const def_list = document.createElement('ul');
+                    const definition = document.createElement('li');
+                    definition.textContent = "Definition " + count + ": " + meaning.definitions[def].definition;
+                    def_list.appendChild(definition);
+
+                    count += 1;
+                    section.appendChild(def_list);
+                };
+
+
+                
+            };
+        };
+
+        async function getText(file) {
+            let x = await fetch(file);
+            let y = await x.text();
+            json_obj_fetch = JSON.parse(y);
+            $("#word2").html("Word (called via fetch): " + json_obj_fetch[0].word.toUpperCase());
+        };
+            
+        function checkWord(json) { 
+            json_obj = JSON.parse(json)[0];
+        };
+
+        function getDict(myCallback, user_word) {
+            let req = new XMLHttpRequest();
+            req.open('GET', "https://api.dictionaryapi.dev/api/v2/entries/en/"+user_word, false);
+            req.onload = function() {
+                if (req.status == 200) {
+                    myCallback(req.responseText);
+                } else {
+                    myCallback(alert("That isn't a word per this dictionary"));
+                }
+            }
+            req.send();
+        };
+
+    });
+    </script>
+
+</body>
+</html>
